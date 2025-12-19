@@ -1,3 +1,5 @@
+from blocks import PatchEmbedding
+
 import numpy as np
 import os
 import torch
@@ -6,39 +8,45 @@ import cv2
 import torch.nn as nn
 import pytorch_lightning as pl 
 
-class PatchEmbedding():
-    def __init__(self, sizes=[256, 256], S=16):
+class ViT(nn.Module):
+    def __init__(self, sizes=[256, 256], S=16, d_model=1024):
+        super().__init__()
         self.sizes = sizes
-        self.S = S 
-        self.P = self.sizes[0] // self.S
-        self.proj = nn.Linear(768, 1024)
+        self.S = S
+        self.d_model = d_model
+        self.n_tokens = self.S ** 2
+
+        self.patcher = PatchEmbedding(self.sizes, self.S, self.d_model)
+        self.cls_token = nn.Parameter(torch.zeros(1, 1, self.d_model))
+        self.pos_embed = nn.Parameter(torch.zeros(1, self.n_tokens + 1, self.d_model)) # + 1 to accomodate cls token
 
     def forward(self, x):
-        """
-        x.shape = [B, C, H, W]
-        Return B, N, D
-        """
+        B = x.shape[0]
+        # 1. Patch images and return token 
+        x = self.patcher(x)
 
-        P = self.P
+        # 2. add cls
+        cls = self.cls_token.expand(B, -1, -1)
+        x = torch.cat([cls, x], dim=1)
 
-        B, C, H, W = x.shape
-
-        x = x.reshape(B, C, H // P, P, W // P, P)
-        x = x.permute(0, 2, 4, 1, 3, 5) 
-        x = x.reshape(B, (H // P) * (W // P), C * P * P)
-        x = self.proj(x)
+        # 3. add pos embed
+        pos_embeds = self.pos_embed.expand(B, -1 , -1) # has shape B, N+1, d_model
+        x = x + pos_embeds
         return x
 
+class VitWrapper(pl.LightningModule):
+    def __init__(self, model):
+        self.model = model
+    
+    def forward(self, x):
+        return self.model(x)
+    
+    def training_step(self, x):
+        x = self.forward(x)
+
+
+
 if __name__ == "__main__":
-    patcher = PatchEmbedding()
-    img = torch.zeros((1, 3, 256, 256))
-
-    res = patcher.forward(img)
-    print(res.shape)
-
-
-
-
-
-
-        
+    model = ViT()
+    test_input = torch.zeros(3, 3, 256, 256)
+    out = model(test_input)
