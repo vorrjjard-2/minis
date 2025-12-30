@@ -1,2 +1,5 @@
 /venv
 2010.11929v2 - Visual Transformer/datasets
+
+__pycache__/
+*.pyc
