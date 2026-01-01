@@ -1,4 +1,4 @@
-from blocks import PatchEmbedding, EncoderBlock
+from .blocks import PatchEmbedding, EncoderBlock
 
 import numpy as np
 import os
@@ -69,7 +69,7 @@ class VitWrapper(pl.LightningModule):
         x, y = batch
         logits = self(x)
 
-        loss = self.criterion(y, logits)
+        loss = self.criterion(logits, y)
         preds = torch.argmax(logits, dim=1)
         acc = (preds == y).float().mean()
 
@@ -84,7 +84,7 @@ class VitWrapper(pl.LightningModule):
 
 if __name__ == "__main__":
     model = ViT()
-    test_input = torch.zeros(3, 3, 256, 256)
+    test_input = torch.ones(8, 3, 256, 256)
     out = model(test_input)
 
     print(out.shape)

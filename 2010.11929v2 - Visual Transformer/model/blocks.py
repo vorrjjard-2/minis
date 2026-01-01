@@ -110,8 +110,11 @@ class TransformerEncoder(nn.Module):
 
 
 if __name__ == "__main__":
-    enc = TransformerEncoder(4)
-    x = torch.ones(3, 257, 1024)
+    patcher = PatchEmbedding()
+    test = torch.ones(8, 3, 256, 256)
 
-    y = enc.forward(x)
-    print(y.shape)
+    tokens = patcher.forward(test)
+
+    print(tokens.shape)
+
+
