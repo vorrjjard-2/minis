@@ -37,8 +37,9 @@ def pre_index(annotation_path):
 
 
 class MiniDataset(Dataset):
-    def __init__(self, split):
+    def __init__(self, split, path):
         self.split = split
+        self.path = path
         self.transform = A.Compose([
             A.Resize(256, 256),
             A.Normalize(
@@ -50,7 +51,7 @@ class MiniDataset(Dataset):
         ])
 
         id_annotations, id_images, id_categories = pre_index(
-            os.path.join('data', 'datasets', 'coco_dataset', self.split, '_annotations.coco.json')
+            os.path.join(self.path, self.split, '_annotations.coco.json')
         )
         targets = {img_id: v[0][0] for img_id, v in id_annotations.items()}
 
