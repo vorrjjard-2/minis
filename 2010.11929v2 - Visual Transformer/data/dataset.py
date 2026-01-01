@@ -73,7 +73,7 @@ class MiniDataset(Dataset):
         Returns an image and target in a tuple.
         """
         raw_path = self.id_images[index][0]
-        image_bgr = cv2.imread(os.path.join('data', 'datasets', 'coco_dataset', self.split, raw_path))
+        image_bgr = cv2.imread(os.path.join(self.path, self.split, raw_path))
         image = np.array(cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)) # type: ignore
 
         image = self.transform(image=image)['image'] if self.transform else image
