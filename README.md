@@ -1,3 +1,3 @@
 # minis
 
-Main repository for paper implememntations. 
+Main repository for implementations of various concepts.
